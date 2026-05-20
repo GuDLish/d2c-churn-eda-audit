@@ -1,6 +1,4 @@
 # d2c-churn-eda-audit
-# d2c-churn-eda-audit
-
 # D2C Customer Churn Capstone — Part 1: EDA & Business Understanding
 
 ## Project Overview
@@ -28,8 +26,6 @@ Part1_EDA_Audit/
 ├── requirements.txt
 ```
 
----
-
 ## Datasets Used
 
 The analysis uses the following datasets:
@@ -40,8 +36,6 @@ The analysis uses the following datasets:
 - web_events_snapshot.csv
 - churn_labels.csv
 - intervention_history.csv
-
----
 
 ## Key Analysis Performed
 
@@ -83,8 +77,6 @@ The analysis uses the following datasets:
 - Matplotlib
 - Seaborn
 - Jupyter Notebook
-
----
 
 ## Installation & Setup
 
