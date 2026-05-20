@@ -1,102 +1,286 @@
 # Data Quality Report
 
-## Overview
+# Overview
 
-This report summarizes the data quality assessment performed during the exploratory data analysis (EDA) phase of the D2C customer churn project.
+This report summarizes the data quality assessment conducted during the Exploratory Data Analysis (EDA) phase of the D2C Customer Churn Intelligence project.
 
-The objective was to inspect dataset reliability, identify missing values, validate datatypes, and detect duplicate records.
+The primary objective of this audit was to evaluate dataset reliability, identify potential analytical risks, validate schema consistency, and detect issues that could negatively impact churn analysis, customer segmentation, or downstream predictive modeling.
 
----
+Special attention was given to:
 
-## Datasets Evaluated
-
-The following datasets were analyzed:
-
-- customers.csv
-- orders.csv
-- support_tickets.csv
-- web_events_snapshot.csv
-- churn_labels.csv
-- intervention_history.csv
+- temporal data leakage risks,
+- duplicate-like business records,
+- missing-value behavior,
+- outlier detection,
+- join consistency,
+- and feature reliability.
 
 ---
 
-## Missing Value Analysis
+# Datasets Evaluated
 
-### Customers Dataset
+The following datasets were audited:
 
-Missing values identified:
-
-- loyalty_tier → 1386 missing values
-- skin_type → 401 missing values
-
-Other columns contained no missing values.
-
----
-
-### Orders Dataset
-
-Missing values identified:
-
-- rating → 80 missing values
-
-Other columns contained no missing values.
+| Dataset | Description |
+|---|---|
+| `customers.csv` | Customer demographic and acquisition information |
+| `orders.csv` | Order-level transaction history |
+| `support_tickets.csv` | Customer support interactions |
+| `web_events_snapshot.csv` | Website and app engagement metrics |
+| `churn_labels.csv` | Churn targets and dataset splits |
+| `intervention_history.csv` | Previous retention campaign history |
 
 ---
 
-### Other Datasets
+# Snapshot Integrity & Leakage Prevention
 
-Most datasets showed minimal or no missing values.
+## Snapshot Date
 
----
+`2025-09-30`
 
-## Duplicate Record Analysis
+## Critical Leakage Rule
 
-Duplicate row checks were performed across all datasets.
+The dataset contains post-snapshot order records extending into the churn target window (`2025-10-01` to `2025-11-29`).
 
-Results:
+These rows exist only for churn-label generation and must not be used as model features or behavioral inputs.
 
-- customers → 0 duplicate rows
-- orders → 0 duplicate rows
-- support_tickets → 0 duplicate rows
-- web_events_snapshot → 0 duplicate rows
-- churn_labels → 0 duplicate rows
-- intervention_history → 0 duplicate rows
+## Leakage Prevention Actions Taken
 
-No major duplication issues were detected.
+- Order records dated after `2025-09-30` were identified separately.
+- Post-snapshot transactions were excluded from feature-related analysis.
+- Churn labels were treated strictly as future outcomes.
+- Temporal consistency was maintained throughout exploratory analysis.
 
----
+## Risk if Ignored
 
-## Datatype Validation
-
-Date columns were successfully converted to datetime format:
-
-- signup_date
-- order_date
-
-Numeric columns such as quantity, revenue, discount percentage, and delivery days were validated successfully.
+Using future transaction activity as input features would create severe target leakage and artificially inflate model performance, resulting in unrealistic churn predictions in production environments.
 
 ---
 
-## Data Consistency Observations
+# Missing Value Analysis
+
+## Customers Dataset
+
+The following missing values were identified:
+
+| Column | Missing Values | Observation |
+|---|---:|---|
+| `loyalty_tier` | 1386 | Likely indicates customers not enrolled in the loyalty program rather than random missingness |
+| `skin_type` | 401 | Self-reported field; missingness may reflect incomplete onboarding behavior |
+
+### Observations
+
+- Missing `loyalty_tier` values appear behaviorally meaningful and should not automatically be treated as data corruption.
+- Null `skin_type` values may indicate lower customer profile completion rates.
+
+### Recommended Treatment
+
+- Treat missing `loyalty_tier` values as `"Not Enrolled"` during segmentation or modeling.
+- Retain `skin_type` nulls carefully or create a separate `"Unknown"` category.
+
+---
+
+## Orders Dataset
+
+| Column | Missing Values | Observation |
+|---|---:|---|
+| `rating` | 80 | Customers did not leave ratings for some orders |
+
+### Observations
+
+Missing ratings may represent:
+
+- disengaged customers,
+- low post-purchase interaction,
+- or customers unwilling to provide feedback.
+
+### Recommended Treatment
+
+- Avoid aggressive imputation of ratings.
+- Preserve missingness as a potentially meaningful behavioral signal.
+
+---
+
+## Other Datasets
+
+Minimal or no missing values were detected in:
+
+- `support_tickets.csv`
+- `web_events_snapshot.csv`
+- `churn_labels.csv`
+- `intervention_history.csv`
+
+---
+
+# Duplicate & Duplicate-Like Record Analysis
+
+## Exact Duplicate Check
+
+Exact duplicate row analysis was performed across all datasets.
+
+| Dataset | Exact Duplicate Rows |
+|---|---:|
+| customers | 0 |
+| orders | 0 |
+| support_tickets | 0 |
+| web_events_snapshot | 0 |
+| churn_labels | 0 |
+| intervention_history | 0 |
+
+No exact row-level duplicates were identified.
+
+---
+
+## Duplicate-Like Business Records
+
+Although exact duplicates were not detected, the `orders.csv` dataset contains intentionally designed duplicate-like records.
+
+### Identified Issue
+
+Some `order_id` values contain the suffix:
+
+```text
+_DUP
+```
+
+These records simulate real-world duplicate transaction scenarios.
+
+### Business Risk
+
+If duplicate-like records are aggregated without validation:
+
+- customer spend may be overstated,
+- order frequency may become inflated,
+- RFM segmentation may become distorted,
+- and churn features may become unreliable.
+
+### Recommended Treatment
+
+- Investigate duplicate-like order behavior before aggregation.
+- Validate whether duplicated orders represent retries, accidental duplication, or legitimate business events.
+- Apply controlled deduplication logic if necessary.
+
+---
+
+# Datatype Validation
+
+Date-related columns were successfully converted into datetime format:
+
+| Dataset | Date Columns |
+|---|---|
+| customers | `signup_date` |
+| orders | `order_date` |
+| support_tickets | `ticket_date` |
+| web_events_snapshot | `snapshot_date` |
+| churn_labels | `snapshot_date` |
+| intervention_history | `snapshot_date` |
+
+Numeric columns such as:
+
+- `gross_amount`,
+- `discount_pct`,
+- `delivery_days`,
+- `resolution_hours`,
+- and engagement metrics
+
+were validated successfully.
+
+---
+
+# Outlier Detection
+
+## Gross Amount Outliers
+
+The `gross_amount` column in `orders.csv` contains several unusually high transaction values.
+
+### Observed Behavior
+
+- Most transactions fall within a normal D2C purchase range.
+- A small number of orders exceed expected consumer spending patterns.
+
+### Potential Explanations
+
+Possible reasons include:
+
+- bulk purchases,
+- premium product combinations,
+- corporate gifting,
+- or anomalous transactions.
+
+### Business Risk
+
+Extreme order values may:
+
+- distort average revenue calculations,
+- bias monetary segmentation,
+- influence model scaling,
+- and impact churn-risk interpretation.
+
+### Recommended Treatment
+
+- Investigate high-value orders before removal.
+- Consider winsorization, percentile capping, or log transformation during modeling.
+- Avoid removing legitimate high-value customers without business validation.
+
+---
+
+# Join Consistency Validation
+
+The datasets were validated using `customer_id` as the primary join key.
+
+## Observations
 
 - Customer IDs were consistently formatted across datasets.
-- Revenue-related columns contained valid numeric values.
-- Category labels were properly structured.
+- The customer universe remained stable at 2,400 customers.
+- Missing support-ticket records for some customers were expected and not treated as join failures.
+
+## Join Strategy Used
+
+All business datasets were treated as left joins from:
+
+```text
+customers.csv
+```
+
+This ensured full customer coverage during analysis.
 
 ---
 
-## Risks Identified
+# Data Consistency Observations
 
-Potential risks affecting analysis quality:
+Additional validation checks confirmed:
 
-- Missing loyalty tier information may reduce segmentation accuracy.
-- Missing customer ratings may affect customer satisfaction analysis.
+- category labels were consistently formatted,
+- acquisition channels were standardized,
+- churn labels aligned correctly with customer IDs,
+- and engagement metrics contained valid numeric ranges.
+
+No major schema corruption issues were detected.
 
 ---
 
-## Conclusion
+# Feature & Modeling Risks Identified
 
-Overall, the datasets were found to be suitable for exploratory data analysis and future predictive modeling tasks.
+| Risk Area | Potential Impact |
+|---|---|
+| Post-snapshot leakage | Artificially inflated model performance |
+| Duplicate-like orders | Distorted spend and frequency metrics |
+| Missing loyalty tiers | Segmentation bias |
+| Extreme revenue outliers | Skewed monetary analysis |
+| Missing ratings | Reduced satisfaction visibility |
+| Sparse engagement behavior | Noisy churn interpretation |
 
-Minor missing value issues exist but do not critically affect the analysis process.
+---
+
+# Overall Assessment
+
+The datasets were found to be suitable for exploratory analysis, customer segmentation, and predictive churn modeling.
+
+However, several important analytical risks require careful handling:
+
+- temporal leakage prevention,
+- duplicate-like transaction validation,
+- outlier treatment,
+- and meaningful handling of behavioral missingness.
+
+The datasets provide strong behavioral, transactional, and engagement signals capable of supporting advanced churn analysis when handled with appropriate business and modeling safeguards.
