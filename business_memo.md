@@ -45,36 +45,30 @@ This suggests the company cannot rely solely on acquiring new users and must str
 
 # 2. Acquisition Channels Differ in Retention Quality
 
-Customer retention performance varied significantly across acquisition channels.
+Customer churn rates differed across acquisition channels (churn in next 60d).
 
-### Observed Pattern
+### Observed Pattern (churn rate)
 
-Higher churn behavior was observed among customers acquired through:
-
-- Google Search,
-- Instagram,
-- and Marketplace channels.
-
-Lower churn behavior was observed among:
-
-- Organic acquisition,
-- and Referral-based customers.
+- **Google Search:** 0.5043
+- **Instagram:** 0.4990
+- **Marketplace:** 0.4912
+- **Influencer:** 0.4762
+- **Referral:** 0.4217
+- **Organic:** 0.3982
 
 ### Business Interpretation
 
-This suggests that some paid acquisition channels may generate customer volume without generating strong long-term engagement.
+Paid channels (e.g., **Instagram 0.4990**) show materially higher churn than **Organic (0.3982)**.
 
-Referral and organic customers may have:
+**Instagram vs Organic:** 0.4990 − 0.3982 = **+0.1008 churn** (~**+25.3% relative** vs Organic).
 
-- stronger product intent,
-- higher trust levels,
-- and better customer-product alignment.
+Referral also shows lower churn than most paid channels (Referral **0.4217** vs Instagram **0.4990**).
 
 ### Recommended Action
 
-- Re-evaluate acquisition efficiency beyond short-term conversion metrics.
+- Re-evaluate acquisition efficiency beyond short-term conversion metrics using churn (and LTV) as the evaluation target.
+- Shift incremental budget toward lower-churn sources (notably **Organic** and **Referral**), while refining paid channel creative/targeting to reduce churn.
 - Include retention and lifetime value (LTV) metrics in marketing performance evaluation.
-- Increase investment in referral and organic growth initiatives where retention quality appears stronger.
 
 ---
 

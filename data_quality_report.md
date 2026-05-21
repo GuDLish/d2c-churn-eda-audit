@@ -42,6 +42,10 @@ The following datasets were audited:
 
 The dataset contains post-snapshot order records extending into the churn target window (`2025-10-01` to `2025-11-29`).
 
+Quantified finding:
+
+- post-snapshot order rows (order_date > 2025-09-30): **1,872**
+
 These rows exist only for churn-label generation and must not be used as model features or behavioral inputs.
 
 ## Leakage Prevention Actions Taken
@@ -145,11 +149,17 @@ _DUP
 
 These records simulate real-world duplicate transaction scenarios.
 
+### Quantified Findings (from audit)
+
+- `_DUP` row count (in full orders): **12**
+- `_DUP` revenue impact (sum of `gross_amount`): **₹7,928.05**
+- Pre-snapshot rows removed due to `_DUP`: **9 rows** (revenue removed: **₹6,093.36**)
+
 ### Business Risk
 
 If duplicate-like records are aggregated without validation:
 
-- customer spend may be overstated,
+- customer spend may be overstated (by **₹7,928.05** across `_DUP` rows),
 - order frequency may become inflated,
 - RFM segmentation may become distorted,
 - and churn features may become unreliable.
@@ -220,6 +230,7 @@ Extreme order values may:
 
 - Investigate high-value orders before removal.
 - Consider winsorization, percentile capping, or log transformation during modeling.
+- Quantified capping reference used in audit: gross_amount capped at **p99 = 2,343**.
 - Avoid removing legitimate high-value customers without business validation.
 
 ---
