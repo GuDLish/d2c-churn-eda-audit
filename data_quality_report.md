@@ -1,4 +1,4 @@
-# Data Quality Report
+## Data Quality Report
 
 # Overview
 
