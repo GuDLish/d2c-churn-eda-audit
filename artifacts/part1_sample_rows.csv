@@ -1,0 +1,6 @@
+customer_id,recency_days,frequency_90d,monetary_90d,avg_rating,ticket_count_90d,churned
+C100231,12,4,2480.0,4.6,0,0
+C100847,78,1,399.0,3.1,2,1
+C101502,34,2,890.0,4.2,1,0
+C102119,120,0,0.0,2.8,3,1
+C102788,5,6,4120.0,4.9,0,0
