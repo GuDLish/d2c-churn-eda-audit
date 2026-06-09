@@ -269,3 +269,19 @@ The findings suggest that effective retention will require:
 - and targeted retention prioritization.
 
 Rather than relying on broad discount campaigns, the company should adopt a data-driven retention strategy focused on customer quality, engagement behavior, and long-term lifetime value preservation.
+---
+
+## What to Investigate Before Launching Any Retention Campaign
+
+A pre-flight checklist. Do not run a campaign until every item is signed off.
+
+1. **Confounding check on channel quality.** Is the high churn for paid-social customers driven by the channel, or by cohort age / discount-heavy onboarding? Re-run the channel × tenure-bucket cross-tab before targeting.
+2. **Causality on support sentiment.** Negative tickets correlate with churn — but did the bad experience *cause* churn, or did already-leaving customers raise more tickets? Look at sentiment *trajectory* (improving vs worsening) in the 30 days before churn.
+3. **Past-intervention selection bias.** The intervention table is non-random — high-risk customers were targeted more. Do **not** estimate lift on observational data. Plan a randomized holdout.
+4. **Holdout discipline.** Reserve at least 10% of each target segment as an untouched control. Lock the assignment before the campaign starts; do not re-allocate mid-flight.
+5. **Success metric = incremental retention, not response rate.** Response/open rates flatter vanity. Compare 60-day retention treatment vs control per segment.
+6. **Leakage rules in the modelling table.** Confirm no post-snapshot orders, no intervention flags, and no churn-derived features leak into training before scoring customers for targeting.
+7. **Per-customer cost cap vs LTV.** For each segment, cap offer cost at a fraction of expected residual LTV (e.g. ≤20%). Champions can absorb richer offers; discount-sensitive cohorts cannot.
+8. **Fatigue and contact policy.** Check intervention frequency per customer in the last 30/60 days. Suppress anyone above the contact cap to avoid unsubscribes.
+9. **Data freshness.** Confirm web/app and support data are <7 days stale at scoring time. Stale recency features will mis-rank dormant customers.
+10. **Ethical / fairness review.** Spot-check that targeting and offer richness do not systematically disadvantage any age group, city tier, or acquisition cohort.
